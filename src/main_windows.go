@@ -37,9 +37,8 @@ func showWindow() error {
 	if _, err := os.Stat(filepath.Join(root, "Runtime", "host", "fxr")); err != nil {
 		return errors.New("The bundled .NET runtime is missing. Download and extract the full PS1XP portable ZIP")
 	}
-	ready, err := prepareEngineResources(filepath.Join(root, "Engine", "Resources"))
-	if err != nil || !ready {
-		return err
+	if !resourcesReady(filepath.Join(root, "Engine", "Resources")) {
+		return errors.New("A bundled PSXPackager resource is missing or damaged. Extract a fresh copy of the full PS1XP portable ZIP")
 	}
 
 	var window *walk.MainWindow

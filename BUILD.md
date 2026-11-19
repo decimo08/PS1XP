@@ -16,7 +16,7 @@ New-Item -ItemType Directory -Force 'portable/Artwork Defaults' | Out-Null
 Copy-Item artwork/*.png 'portable/Artwork Defaults/'
 ```
 
-The prebuilt portable ZIP already includes the executable, artwork defaults, patched engine, and .NET runtime.
+The prebuilt portable ZIP includes the executable, artwork defaults, patched engine, .NET runtime, and conversion resources.
 
 ## Add the conversion engine
 
@@ -34,7 +34,7 @@ Copy-Item artwork/*.png portable/Engine/Resources/
 
 Download the Windows x64 **ZIP** for the [.NET 10 runtime](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) and extract its contents into `portable/Runtime/`.
 
-On first launch, the app imports the three required boot resources from the official PSXPackager v1.8.0 ZIP.
+For a source build, extract `BASE.PBP`, `DATA.PSP`, and `gameInfo.db` from the [official PSXPackager v1.8.0 ZIP](https://github.com/RupertAvery/PSXPackager/releases/tag/v1.8.0) and place them in `portable/Engine/Resources/`. The prebuilt portable ZIP already includes these files.
 
 ## Optional PMF tools
 

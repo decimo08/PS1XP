@@ -1,1 +1,1 @@
-d44374d4af4b37dd83d3ca6ef50ca7afa4ee4739463a385046f65e1e7d07b705  PS1XP-Portable-0.1.0-rc.2-win-x64.zip
+c7429c09dfa5ccd072333decbfdbc764b5aad5e652c8369536bf78ad26872e93  PS1XP-Portable-0.1.0-rc.3-win-x64.zip
