@@ -1,0 +1,124 @@
+diff --git a/PSXPackager/ConsoleNotifier.cs b/PSXPackager/ConsoleNotifier.cs
+index b560589..a00385e 100644
+--- a/PSXPackager/ConsoleNotifier.cs
++++ b/PSXPackager/ConsoleNotifier.cs
+@@ -1,4 +1,5 @@
+ ﻿using System;
++using System.IO;
+ using Popstation;
+ using PSXPackager.Common;
+ using PSXPackager.Common.Notification;
+@@ -7,7 +8,6 @@ namespace PSXPackager
+ {
+     public class ConsoleNotifier : NotifierBase
+     {
+-        private int _cursorYPos;
+         private long _total;
+         private long _lastTicks;
+         private int _charsToDelete;
+@@ -82,7 +82,7 @@ namespace PSXPackager
+ 
+                 case PopstationEventEnum.Error:
+                     _charsToDelete = 0;
+-                    Console.CursorVisible = true;
++                    SetCursorVisible(true);
+                     WriteLine(@event, $"\r\n{value}");
+                     break;
+ 
+@@ -92,6 +92,11 @@ namespace PSXPackager
+                     break;
+ 
+                 case PopstationEventEnum.Warning:
++                    if (Console.IsOutputRedirected)
++                    {
++                        WriteLine(@event, $"WARNING: {value}");
++                        break;
++                    }
+                     var lastColor = Console.ForegroundColor;
+                     Console.ForegroundColor = ConsoleColor.DarkYellow;
+                     WriteLine(@event, $"WARNING: {value}");
+@@ -110,26 +115,22 @@ namespace PSXPackager
+ 
+                 case PopstationEventEnum.ConvertStart:
+                     Write(@event, $"Converting Disc {value} - ");
+-                    _cursorYPos = Console.CursorTop;
+-                    Console.CursorVisible = false;
++                    SetCursorVisible(false);
+                     break;
+ 
+                 case PopstationEventEnum.DiscStart:
+                     Write(@event, $"Writing Disc {value} - ");
+-                    _cursorYPos = Console.CursorTop;
+-                    Console.CursorVisible = false;
++                    SetCursorVisible(false);
+                     break;
+ 
+                 case PopstationEventEnum.ExtractStart:
+                     Write(@event, $"Extracting Disc {value} - ");
+-                    _cursorYPos = Console.CursorTop;
+-                    Console.CursorVisible = false;
++                    SetCursorVisible(false);
+                     break;
+ 
+                 case PopstationEventEnum.DecompressStart:
+                     Write(@event, $"Decompressing file {value} - ");
+-                    _cursorYPos = Console.CursorTop;
+-                    Console.CursorVisible = false;
++                    SetCursorVisible(false);
+                     break;
+ 
+                 case PopstationEventEnum.ConvertComplete:
+@@ -140,22 +141,20 @@ namespace PSXPackager
+                 case PopstationEventEnum.DecompressComplete:
+                     Overwrite($"100%");
+                     _charsToDelete = 0;
+-                    Console.CursorVisible = true;
+-                    Console.WriteLine();
++                    SetCursorVisible(true);
++                    if (!Console.IsOutputRedirected) Console.WriteLine();
+                     break;
+ 
+                 case PopstationEventEnum.ConvertProgress:
+                 case PopstationEventEnum.ExtractProgress:
+                 case PopstationEventEnum.WriteProgress:
+-                    //Console.SetCursorPosition(0, _cursorYPos);
+                     if (DateTime.Now.Ticks - _lastTicks > 100000)
+                     {
+-                        Overwrite($"{Math.Round(Convert.ToInt32(value) / (double)_total * 100, 0)}%");
++                        Overwrite($"{(_total > 0 ? Math.Round(Convert.ToInt64(value) / (double)_total * 100, 0) : 0)}%");
+                         _lastTicks = DateTime.Now.Ticks;
+                     }
+                     break;
+                 case PopstationEventEnum.DecompressProgress:
+-                    //Console.SetCursorPosition(0, _cursorYPos);
+                     if (DateTime.Now.Ticks - _lastTicks > 100000)
+                     {
+                         Overwrite($"{value}%");
+@@ -179,11 +178,26 @@ namespace PSXPackager
+ 
+         private void Write(PopstationEventEnum @event, string text)
+         {
+-            Console.Write(TimeStamp(@event) + text);
++            if (Console.IsOutputRedirected)
++                WriteLine(@event, text.TrimEnd(' ', '-'));
++            else
++                Console.Write(TimeStamp(@event) + text);
++        }
++
++        private static void SetCursorVisible(bool visible)
++        {
++            if (Console.IsOutputRedirected) return;
++            try { Console.CursorVisible = visible; }
++            catch (IOException) { }
+         }
+ 
+         private void Overwrite(string text)
+         {
++            if (Console.IsOutputRedirected)
++            {
++                Console.WriteLine("PSX_PROGRESS " + text);
++                return;
++            }
+             Console.Write(new string('\b', _charsToDelete));
+             Console.Write(text);
+             _charsToDelete = text.Length;
