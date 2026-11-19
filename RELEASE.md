@@ -4,7 +4,7 @@ This candidate uses original icon, background, and handheld preview artwork. It 
 
 ## Verification
 
-The launcher was cross-compiled and passed Windows-targeted Go vet. The existing conversion, artwork, and sample STR-to-PMF workflow passed automated tests in the build environment. The assembled candidate still needs a Windows smoke test. Physical PSP playback remains unverified.
+The launcher was cross-compiled and passed Windows-targeted Go vet. The existing conversion, artwork, and sample STR-to-PMF workflow passed automated tests in the build environment. The assembled candidate still needs a Windows smoke test. The maintainer confirmed a successful PSP launch of the previously failing title using the corrected private build. The independently assembled release candidate still needs its own Windows and PSP checks.
 
 ## Windows smoke test
 
@@ -17,4 +17,4 @@ The launcher was cross-compiled and passed Windows-targeted Go vet. The existing
 
 ## Public release
 
-Publish from a new repository initialized from this source snapshot. Confirm the license for the new interface, keep the third-party notices, and verify distribution permission before including upstream resources in a release asset. Attach the tested ZIP and SHA-256 file to a versioned release. The release candidate is unsigned. An Authenticode signature from a trusted publisher can help establish trust, and Windows may still warn while a build has limited reputation.
+Publish from a new repository initialized from this source snapshot. Keep the MIT license and third-party notices. Obtain upstream resources separately as documented in BUILD.md. Attach the tested ZIP and SHA-256 file to a versioned release. The release candidate is unsigned. An Authenticode signature from a trusted publisher can help establish trust, and Windows may still warn while a build has limited reputation.
