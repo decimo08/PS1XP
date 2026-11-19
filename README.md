@@ -1,10 +1,12 @@
-# PS1 to EBOOT · Windows x64
+# PS1XP · PS1 to EBOOT for Windows x64
 
 A portable Windows x64 interface for creating PSP `EBOOT.PBP` files from PS1 BIN, CUE, and ISO images. Features include drag-and-drop, game ID folders, live progress, icon and background editing, and PMF creation and preview.
 
 The original conversion engine is [PSXPackager 1.8.0](https://github.com/RupertAvery/PSXPackager/tree/v1.8.0) by **RupertAvery (David Khristepher Santos)**. This candidate supplies the Windows interface, original replacement artwork, and PSXPackager patches for console-free progress and the official GUI’s boot resources.
 
 ## Downloads
+
+[Windows prerelease v0.1.0-rc.1](https://github.com/decimo08/PS1XP/releases/tag/v0.1.0-rc.1)
 
 - [Windows x64 launcher ZIP](PS1-to-EBOOT-Launcher-0.1.0-rc.1-win-x64.zip)
 - [SHA-256 checksums](SHA256SUMS.txt)
