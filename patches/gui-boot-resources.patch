@@ -1,0 +1,23 @@
+diff --git a/Popstation/Processing.cs b/Popstation/Processing.cs
+index 83b7013..9e56b67 100644
+--- a/Popstation/Processing.cs
++++ b/Popstation/Processing.cs
+@@ -560,6 +560,9 @@ namespace Popstation
+ 
+                 if (!File.Exists(resourcePath) || !processOptions.ImportResources)
+                 {
++                    // Match the GUI: use the base PBP boot image unless explicitly supplied.
++                    if (type == ResourceType.BOOT)
++                        return Resource.Empty(type);
+                     resourcePath = Path.Combine(defaultPath, $"{type}.{ext}");
+                 }
+ 
+@@ -587,6 +590,8 @@ namespace Popstation
+                 }
+             }
+ 
++            // The official GUI uses the supplied DATA.PSP loader.
++            options.DataPsp = GetResourceOrDefault(ResourceType.DATA);
+             options.Icon0 = GetResourceOrDefault(ResourceType.ICON0);
+             options.Icon1 = GetResourceOrDefault(ResourceType.ICON1);
+             options.Pic0 = GetResourceOrDefault(ResourceType.PIC0);

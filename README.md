@@ -2,7 +2,7 @@
 
 A portable Windows x64 interface for creating PSP `EBOOT.PBP` files from PS1 BIN, CUE, and ISO images. Features include drag-and-drop, game ID folders, live progress, icon and background editing, and PMF creation and preview.
 
-The original conversion engine is [PSXPackager 1.8.0](https://github.com/RupertAvery/PSXPackager/tree/v1.8.0) by **RupertAvery (David Khristepher Santos)**. This candidate supplies the Windows interface, original replacement artwork, and a small PSXPackager patch for progress reporting without a console.
+The original conversion engine is [PSXPackager 1.8.0](https://github.com/RupertAvery/PSXPackager/tree/v1.8.0) by **RupertAvery (David Khristepher Santos)**. This candidate supplies the Windows interface, original replacement artwork, and PSXPackager patches for console-free progress and the official GUI’s boot resources.
 
 ## Candidate downloads
 

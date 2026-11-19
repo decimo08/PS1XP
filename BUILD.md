@@ -26,7 +26,7 @@ The prebuilt launcher ZIP already includes that executable and those artwork def
 ```powershell
 git clone https://github.com/RupertAvery/PSXPackager.git upstream
 git -C upstream checkout 63cfacfe29b4ec6668a05f719e5451b5d861d1b0
-git -C upstream apply ../patches/redirected-console.patch
+git -C upstream apply ../patches/redirected-console.patch ../patches/gui-boot-resources.patch
 dotnet publish upstream/PSXPackager/PSXPackager-windows.csproj -c Release -r win-x64 -o engine-build
 Copy-Item engine-build/psxpackager.exe portable/Engine/
 ```

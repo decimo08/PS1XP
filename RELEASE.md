@@ -1,6 +1,6 @@
 # 0.1.0-rc.1 · release notes
 
-This candidate uses original icon, background, and handheld preview artwork. It includes the Windows x64 launcher, buildable interface source, the redirected-console engine patch, and a SHA-256 checksum.
+This candidate uses original icon, background, and handheld preview artwork. It includes the Windows x64 launcher, buildable interface source, the redirected-console and GUI boot-resource patches, and a SHA-256 checksum.
 
 ## Verification
 
