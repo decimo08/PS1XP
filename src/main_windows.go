@@ -32,7 +32,14 @@ func showWindow() error {
 	root := filepath.Dir(exe)
 	engine := filepath.Join(root, "Engine", "psxpackager.exe")
 	if _, err := os.Stat(engine); err != nil {
-		return errors.New("PSXPackager is missing. Extract the entire ZIP and run the app from the extracted folder")
+		return errors.New("The engine is missing from this package. Download the full PS1XP portable ZIP and extract it to a writable folder")
+	}
+	if _, err := os.Stat(filepath.Join(root, "Runtime", "host", "fxr")); err != nil {
+		return errors.New("The bundled .NET runtime is missing. Download and extract the full PS1XP portable ZIP")
+	}
+	ready, err := prepareEngineResources(filepath.Join(root, "Engine", "Resources"))
+	if err != nil || !ready {
+		return err
 	}
 
 	var window *walk.MainWindow

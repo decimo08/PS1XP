@@ -1,26 +1,26 @@
 # PS1XP · PS1 to EBOOT for Windows x64
 
-A portable Windows x64 interface for creating PSP `EBOOT.PBP` files from PS1 BIN, CUE, and ISO images. Features include drag-and-drop, game ID folders, live progress, icon and background editing, and PMF creation and preview.
+Convert PS1 BIN, CUE, and ISO disc images to `EBOOT.PBP` for the PSP. PS1XP is an independent Windows interface using [PSXPackager 1.8.0](https://github.com/RupertAvery/PSXPackager/tree/v1.8.0) by **RupertAvery (David Khristepher Santos)**.
 
-The original conversion engine is [PSXPackager 1.8.0](https://github.com/RupertAvery/PSXPackager/tree/v1.8.0) by **RupertAvery (David Khristepher Santos)**. This candidate supplies the Windows interface, original replacement artwork, and PSXPackager patches for console-free progress and the official GUI’s boot resources.
+## Download and first run
 
-## Downloads
+1. Download the [full portable prerelease ZIP](https://github.com/decimo08/PS1XP/releases/tag/v0.1.0-rc.2) and extract it to a writable folder.
+2. Run **`PS1 to EBOOT.exe`**. The conversion engine and .NET runtime are already in the package.
+3. At the one-time setup prompt, select **Yes** to download and import the official PSXPackager resources or **No** to choose an [official PSXPackager v1.8.0 ZIP](https://github.com/RupertAvery/PSXPackager/releases/tag/v1.8.0) you already downloaded. Keep the official ZIP intact for import. The app verifies and saves three resources locally, then starts automatically.
 
-[Windows prerelease v0.1.0-rc.1](https://github.com/decimo08/PS1XP/releases/tag/v0.1.0-rc.1)
+Drop a disc image onto **Convert**, select a save folder, and click **Create EBOOT.PBP**. For a multi-track disc, drop the CUE and keep the referenced BIN tracks beside it. An export is saved as `<save folder>/<game ID>/EBOOT.PBP`.
 
-- [Windows x64 launcher ZIP](PS1-to-EBOOT-Launcher-0.1.0-rc.1-win-x64.zip)
-- [SHA-256 checksums](SHA256SUMS.txt)
-- [Build and setup instructions](BUILD.md)
-- [Release notes and Windows smoke test](RELEASE.md)
+## Features
 
-The launcher ZIP needs the upstream engine and runtime files listed in [BUILD.md](BUILD.md). The optional PMF tools must also be added to enable the cutscene workflow. The download includes original artwork. Obtain the engine resources and optional FFmpeg binaries from their upstream sources as described in the build guide.
+- Game ID detection, live conversion progress, cancellation, and overwrite confirmation.
+- Three lossless compression presets and one-disc-per-export support.
+- Default artwork, custom PNG or JPEG, online cover lookup, and a PSP-style artwork preview.
+- PMF import. Cutscene-to-PMF conversion and playback preview use [optional tools](BUILD.md#optional-pmf-tools).
 
-## Output and limitations
+The PSP menu displays PMF animation in its icon slot. The full-screen background is a static PNG. Cooked ISO images can omit original CD audio or CD-XA data.
 
-The app creates `<destination>/<game ID>/EBOOT.PBP`. Use a CUE when the disc includes one and keep all its BIN tracks beside it. The app handles one disc per export. PMF animation appears in the PSP menu icon slot. The full-screen background is a static PNG.
+## Verification and credits
 
-Open-source notices are in [notices](notices/). The interface source and original release artwork are available under the [MIT license](LICENSE). Upstream components retain their own licenses.
+The maintainer verified that the previously failing title boots on a physical PSP using the corrected private Windows build. This public build uses that same loader path. The first-run import and generated PBP sections were tested in the build environment. The public Windows UI and PSP playback still need an end-to-end test.
 
-## Compatibility
-
-The maintainer confirmed that a game which previously exited on a physical PSP launched successfully after the boot-resource fix in the private Windows build. This source release uses that same patch. The clean launcher package with separately assembled dependencies has not been tested on Windows or PSP hardware.
+The interface and original artwork are covered by the [MIT license](LICENSE). Upstream notices are in [notices](notices), and the engine patches are in [patches](patches). See [BUILD.md](BUILD.md) for source builds and [RELEASE.md](RELEASE.md) for release notes.

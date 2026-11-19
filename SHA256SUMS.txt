@@ -1,1 +1,1 @@
-b149148fe77e972a4904607d16a3107e59464b0c339d364d9cb9274ad0ffdcfb  PS1-to-EBOOT-Launcher-0.1.0-rc.1-win-x64.zip
+d44374d4af4b37dd83d3ca6ef50ca7afa4ee4739463a385046f65e1e7d07b705  PS1XP-Portable-0.1.0-rc.2-win-x64.zip
