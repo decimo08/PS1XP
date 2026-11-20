@@ -42,4 +42,4 @@ For a source build, extract `BASE.PBP`, `DATA.PSP`, and `gameInfo.db` from the [
 - Extract the [Windows x64 embeddable Python 3.13.9 ZIP](https://www.python.org/ftp/python/3.13.9/python-3.13.9-embed-amd64.zip) into `portable/Tools/Python/`.
 - Save [pspmedia.py from Total Kommando's PSP Media Toolkit](https://raw.githubusercontent.com/TotalKommando/psp-media-toolkit/3e4825e60823fb9364284030e8baffea542ea546/pspmedia.py) into `portable/Tools/`.
 
-The assembled folder is ready to launch on Windows. Keep its contents together. The media tools are optional for disc conversion.
+The assembled folder is ready to launch on Windows. Keep its contents together. The prebuilt portable ZIP includes the media tools. Include them in a source build to enable cutscene conversion and PMF previews.

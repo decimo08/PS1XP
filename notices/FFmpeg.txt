@@ -1,0 +1,16 @@
+FFmpeg 9.0.2 Essentials Build for Windows x64
+Unmodified Gyan build distributed in Tools/FFmpeg. The archive includes
+the original licensing information and build documentation.
+
+Distribution and build information
+https://www.gyan.dev/ffmpeg/builds/
+https://www.gyan.dev/ffmpeg/builds/packages/ffmpeg-9.0.2-essentials_build.7z
+
+FFmpeg source for this build
+https://github.com/FFmpeg/FFmpeg/tree/946fcce07b
+
+x264 source repository
+https://code.videolan.org/videolan/x264/
+
+Upstream archive SHA-256
+4705843ccaaf54257c16ad90f3e952ece33c17df964ecf7bfdbb0f49c7171077

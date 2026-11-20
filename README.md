@@ -4,7 +4,7 @@ Convert PS1 BIN, CUE, and ISO disc images to `EBOOT.PBP` for the PSP. PS1XP is a
 
 ## Download and first run
 
-1. Download the [offline portable Windows x64 ZIP](https://github.com/decimo08/PS1XP/releases/tag/v0.1.0-rc.5) and extract it.
+1. Download the [offline portable Windows x64 ZIP](https://github.com/decimo08/PS1XP/releases/tag/v0.1.0-rc.6) and extract it.
 2. Run **`PS1 to EBOOT.exe`**. The patched engine, .NET runtime, and matching PSXPackager resources are included. Conversion works offline on first launch.
 
 Drop a disc image or ZIP onto **Convert**, or use **Choose file**. For a multi-track disc, use the CUE and its BIN tracks. A ZIP may contain one CUE with its referenced tracks, or one standalone BIN or ISO. The app stages ZIP files internally. Select a save folder and click **Create EBOOT.PBP**. An export is saved as `<save folder>/<game ID>/EBOOT.PBP`.
@@ -14,7 +14,7 @@ Drop a disc image or ZIP onto **Convert**, or use **Choose file**. For a multi-t
 - Game ID detection, live conversion progress, cancellation, and overwrite confirmation.
 - Three lossless compression presets and one-disc-per-export support.
 - Default artwork, custom PNG or JPEG, online cover lookup, and a PSP-style artwork preview.
-- PMF import. Cutscene-to-PMF conversion and playback preview use [optional tools](BUILD.md#optional-pmf-tools).
+- PMF import, cutscene-to-PMF conversion, and playback preview. The portable ZIP includes the media tools. FFmpeg unpacks locally on first use.
 
 To restore the photo frame from the private build, use **Artwork → Choose preview frame** and select your original 720 × 504 `PSP_Frame.png`. PS1XP saves a local copy for future launches.
 
