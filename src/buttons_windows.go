@@ -51,6 +51,14 @@ func setButtonPrimary(button *walk.PushButton, primary bool) {
 	}
 }
 
+func setButtonSurface(button *walk.PushButton, surface walk.Color) {
+	handle := button.Handle()
+	if style := themedButtons[handle]; style != nil {
+		style.surface = surface
+		win.InvalidateRect(handle, nil, false)
+	}
+}
+
 func themedButtonProc(hwnd uintptr, message uint32, wparam, lparam, id, _ uintptr) uintptr {
 	handle := win.HWND(hwnd)
 	style := themedButtons[handle]

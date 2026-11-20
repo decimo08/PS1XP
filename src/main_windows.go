@@ -48,7 +48,7 @@ func showWindow() error {
 	var closing bool
 	var discName, discDetails, detailsTitle, detailsFormat *walk.Label
 	var convertPage, artworkContainer, conversionFooter *walk.Composite
-	var discRow, idleDrop, selectedFill *walk.Composite
+	var discRow, idleDrop, selectedFill, dropActions *walk.Composite
 	var dropTitle, dropHint, dropIcon *walk.Label
 	var pickDisc *walk.PushButton
 	var archiveDir string
@@ -416,7 +416,7 @@ func showWindow() error {
 									Label{AssignTo: &dropIcon, Text: "📂", TextColor: accentInk, TextAlignment: AlignCenter, Font: Font{Family: "Segoe UI Symbol", PointSize: 29}},
 									Label{AssignTo: &dropTitle, Text: "Drop here or choose a file", TextColor: ink, TextAlignment: AlignCenter, Font: Font{Family: "Segoe UI", PointSize: 18, Bold: true}},
 									Label{AssignTo: &dropHint, Text: "BIN, CUE, ISO or ZIP · stored locally", TextColor: muted, TextAlignment: AlignCenter},
-									Composite{Background: dropSurface, Layout: HBox{MarginsZero: true}, Children: []Widget{
+									Composite{AssignTo: &dropActions, Background: dropSurface, Layout: HBox{MarginsZero: true}, Children: []Widget{
 										HSpacer{},
 										PushButton{AssignTo: &pickDisc, Text: "Choose file…", MinSize: Size{Width: 118, Height: 34}, OnClicked: openDisc},
 										HSpacer{},
@@ -539,16 +539,34 @@ func showWindow() error {
 	}
 	themeButton(browseOutput, background.Color, false)
 	themeButton(removeDisc, field.Color, false)
-	themeButton(pickDisc, dropSurface.Color, true)
-	hoverBrush, err := walk.NewSolidColorBrush(walk.RGB(54, 46, 82))
-	if err != nil {
+	themeButton(pickDisc, dropSurface.Color, false)
+	paintDropSurface := func(color walk.Color) error {
+		// Walk frees a brush after its last widget detaches. Use a fresh
+		// shared brush for each transition so hover can be repeated.
+		brush, err := walk.NewSolidColorBrush(color)
+		if err != nil {
+			return err
+		}
+		for _, widget := range []walk.Widget{idleDrop, dropIcon, dropTitle, dropHint, dropActions} {
+			widget.SetBackground(brush)
+		}
+		setButtonSurface(pickDisc, color)
+		return nil
+	}
+	if err := paintDropSurface(dropSurface.Color); err != nil {
 		return err
 	}
-	defer hoverBrush.Dispose()
-	normalDropBackground := idleDrop.Background()
+
 	dropHighlighted := false
 	highlight := func(active bool) {
 		if active == dropHighlighted {
+			return
+		}
+		color := dropSurface.Color
+		if active {
+			color = walk.RGB(64, 48, 100)
+		}
+		if err := paintDropSurface(color); err != nil {
 			return
 		}
 		dropHighlighted = active
@@ -557,12 +575,10 @@ func showWindow() error {
 		discRow.SetVisible(hasDisc && !active)
 		selectedFill.SetVisible(hasDisc && !active)
 		if active {
-			idleDrop.SetBackground(hoverBrush)
 			dropIcon.SetText("↑")
 			dropTitle.SetText("Drop to open")
 			dropHint.SetText("ZIP files are unpacked automatically.")
 		} else {
-			idleDrop.SetBackground(normalDropBackground)
 			dropIcon.SetText("📂")
 			dropTitle.SetText("Drop here or choose a file")
 			dropHint.SetText("BIN, CUE, ISO or ZIP · stored locally")
