@@ -50,6 +50,15 @@ func showWindow() error {
 	var convertPage, artworkContainer, conversionFooter *walk.Composite
 	var discRow, idleDrop, selectedFill *walk.Composite
 	var dropTitle, dropHint, dropIcon *walk.Label
+	var pickDisc *walk.PushButton
+	var archiveDir string
+	clearArchive := func() {
+		if archiveDir != "" {
+			_ = os.RemoveAll(archiveDir)
+			archiveDir = ""
+		}
+	}
+	defer clearArchive()
 	var navConvert, navArtwork, navSettings, removeDisc, logButton *walk.PushButton
 	var level *walk.ComboBox
 	var browseOutput, convert, cancelButton, openOutput *walk.PushButton
@@ -77,7 +86,7 @@ func showWindow() error {
 	artPage.view.AssignTo = &artworkContainer
 
 	setBusy := func(busy bool) {
-		for _, widget := range []walk.Widget{destination, detailsSerial, level, browseOutput, convert, navArtwork} {
+		for _, widget := range []walk.Widget{destination, detailsSerial, level, browseOutput, convert, navArtwork, pickDisc} {
 			widget.SetEnabled(!busy)
 		}
 		cancelButton.SetEnabled(busy)
@@ -86,15 +95,20 @@ func showWindow() error {
 		openOutput.SetEnabled(!busy && savedDir != "")
 	}
 
-	loadImage := func(path string) {
+	loadImage := func(path, displayPath, stagedDir string) {
+		clearArchive()
+		archiveDir = stagedDir
 		progress.SetVisible(false)
 		inputPath = path
 		requestNumber++
 		request := requestNumber
-		discName.SetText(filepath.Base(path))
-		detailsTitle.SetText(strings.TrimSuffix(filepath.Base(path), filepath.Ext(path)))
+		discName.SetText(filepath.Base(displayPath))
+		detailsTitle.SetText(strings.TrimSuffix(filepath.Base(displayPath), filepath.Ext(displayPath)))
 		artPage.updateDisc(detailsTitle.Text(), "")
 		kind := strings.ToUpper(strings.TrimPrefix(filepath.Ext(path), "."))
+		if stagedDir != "" {
+			kind = "ZIP · " + kind
+		}
 		discDetails.SetText(kind + " · Reading game ID…")
 		detailsFormat.SetText(kind)
 		detailsSerial.SetText("")
@@ -118,7 +132,7 @@ func showWindow() error {
 					return
 				}
 				if title == "" {
-					title = strings.TrimSuffix(filepath.Base(path), filepath.Ext(path))
+					title = strings.TrimSuffix(filepath.Base(displayPath), filepath.Ext(displayPath))
 				}
 				artPage.updateDisc(title, id)
 				detailsSerial.SetEnabled(true)
@@ -135,7 +149,7 @@ func showWindow() error {
 			})
 		}()
 		if destination.Text() == "" {
-			destination.SetText(filepath.Dir(path))
+			destination.SetText(filepath.Dir(displayPath))
 		}
 		status.SetText("Ready to convert")
 	}
@@ -153,19 +167,63 @@ func showWindow() error {
 			switch strings.ToLower(filepath.Ext(path)) {
 			case ".cue":
 				cues = append(cues, path)
-			case ".bin", ".iso":
+			case ".bin", ".iso", ".zip":
 				images = append(images, path)
 			}
 		}
 		switch {
 		case len(cues) == 1:
-			loadImage(cues[0])
+			loadImage(cues[0], cues[0], "")
 		case len(cues) == 0 && len(images) == 1:
-			loadImage(images[0])
+			path := images[0]
+			if !strings.EqualFold(filepath.Ext(path), ".zip") {
+				loadImage(path, path, "")
+				return
+			}
+			ctx, stop := context.WithCancel(context.Background())
+			cancel = stop
+			setBusy(true)
+			status.SetText("Opening ZIP…")
+			go func() {
+				defer stop()
+				dir, err := os.MkdirTemp("", "ps1xp-archive-")
+				var disc string
+				if err == nil {
+					disc, err = extractDiscArchive(ctx, path, dir)
+				}
+				if ctx.Err() != nil {
+					err = ctx.Err()
+				}
+				window.Synchronize(func() {
+					cancel = nil
+					setBusy(false)
+					if err != nil {
+						if dir != "" {
+							_ = os.RemoveAll(dir)
+						}
+						status.SetText(err.Error())
+						return
+					}
+					loadImage(disc, path, dir)
+				})
+			}()
 		case len(cues) == 0 && len(images) == 0:
-			status.SetText("Drop a BIN, CUE or ISO file.")
+			status.SetText("Drop a BIN, CUE, ISO or ZIP file.")
 		default:
 			status.SetText("Drop one disc image at a time.")
+		}
+	}
+
+	openDisc := func() {
+		if cancel != nil {
+			return
+		}
+		dialog := walk.FileDialog{Title: "Choose a PS1 disc image or ZIP", Filter: "PS1 disc and ZIP files (*.bin;*.cue;*.iso;*.zip)|*.bin;*.cue;*.iso;*.zip"}
+		ok, err := dialog.ShowOpen(window)
+		if err != nil {
+			status.SetText(err.Error())
+		} else if ok {
+			dropImages([]string{dialog.FilePath})
 		}
 	}
 
@@ -294,7 +352,7 @@ func showWindow() error {
 	background := SolidColorBrush{Color: walk.RGB(29, 31, 39)}
 	sidebar := SolidColorBrush{Color: walk.RGB(23, 25, 33)}
 	panel := SolidColorBrush{Color: walk.RGB(37, 40, 53)}
-	dropSurface := SolidColorBrush{Color: walk.RGB(46, 39, 69)}
+	dropSurface := SolidColorBrush{Color: walk.RGB(34, 35, 48)}
 	accentInk := walk.RGB(204, 165, 255)
 	field := SolidColorBrush{Color: walk.RGB(49, 52, 63)}
 	ink := walk.RGB(245, 245, 250)
@@ -355,9 +413,14 @@ func showWindow() error {
 								}},
 								Composite{AssignTo: &idleDrop, Background: dropSurface, StretchFactor: 1, MinSize: Size{Height: 175}, Layout: VBox{Margins: pad, Spacing: 8}, Children: []Widget{
 									VSpacer{},
-									Label{AssignTo: &dropIcon, Text: "◉", TextColor: accentInk, TextAlignment: AlignCenter, Font: Font{Family: "Segoe UI Symbol", PointSize: 29}},
-									Label{AssignTo: &dropTitle, Text: "Drop a BIN, CUE or ISO here", TextColor: ink, TextAlignment: AlignCenter, Font: Font{Family: "Segoe UI", PointSize: 18, Bold: true}},
-									Label{AssignTo: &dropHint, Text: "For multi-track discs, drop the CUE sheet.", TextColor: muted, TextAlignment: AlignCenter},
+									Label{AssignTo: &dropIcon, Text: "📂", TextColor: accentInk, TextAlignment: AlignCenter, Font: Font{Family: "Segoe UI Symbol", PointSize: 29}},
+									Label{AssignTo: &dropTitle, Text: "Drop here or choose a file", TextColor: ink, TextAlignment: AlignCenter, Font: Font{Family: "Segoe UI", PointSize: 18, Bold: true}},
+									Label{AssignTo: &dropHint, Text: "BIN, CUE, ISO or ZIP · stored locally", TextColor: muted, TextAlignment: AlignCenter},
+									Composite{Background: dropSurface, Layout: HBox{MarginsZero: true}, Children: []Widget{
+										HSpacer{},
+										PushButton{AssignTo: &pickDisc, Text: "Choose file…", MinSize: Size{Width: 118, Height: 34}, OnClicked: openDisc},
+										HSpacer{},
+									}},
 									VSpacer{},
 								}},
 								Composite{AssignTo: &discRow, Visible: false, Background: field, Layout: HBox{Margins: pad, Spacing: 12}, Children: []Widget{
@@ -368,6 +431,7 @@ func showWindow() error {
 									}},
 									PushButton{AssignTo: &removeDisc, Text: "×", ToolTipText: "Remove disc", Visible: false, Enabled: false, MaxSize: Size{Width: 38}, OnClicked: func() {
 										inputPath = ""
+										clearArchive()
 										artPage.updateDisc("", "")
 										discRow.SetVisible(false)
 										selectedFill.SetVisible(false)
@@ -475,6 +539,46 @@ func showWindow() error {
 	}
 	themeButton(browseOutput, background.Color, false)
 	themeButton(removeDisc, field.Color, false)
+	themeButton(pickDisc, dropSurface.Color, true)
+	hoverBrush, err := walk.NewSolidColorBrush(walk.RGB(54, 46, 82))
+	if err != nil {
+		return err
+	}
+	defer hoverBrush.Dispose()
+	normalDropBackground := idleDrop.Background()
+	dropHighlighted := false
+	highlight := func(active bool) {
+		if active == dropHighlighted {
+			return
+		}
+		dropHighlighted = active
+		hasDisc := inputPath != ""
+		idleDrop.SetVisible(active || !hasDisc)
+		discRow.SetVisible(hasDisc && !active)
+		selectedFill.SetVisible(hasDisc && !active)
+		if active {
+			idleDrop.SetBackground(hoverBrush)
+			dropIcon.SetText("↑")
+			dropTitle.SetText("Drop to open")
+			dropHint.SetText("ZIP files are unpacked automatically.")
+		} else {
+			idleDrop.SetBackground(normalDropBackground)
+			dropIcon.SetText("📂")
+			dropTitle.SetText("Drop here or choose a file")
+			dropHint.SetText("BIN, CUE, ISO or ZIP · stored locally")
+		}
+	}
+	stopDrop, attached := attachShellDrop(dropZone.Handle(), func() bool { return cancel == nil }, highlight, dropImages)
+	defer stopDrop()
+	if attached {
+		for _, label := range []*walk.Label{dropIcon, dropTitle, dropHint} {
+			label.MouseUp().Attach(func(_, _ int, button walk.MouseButton) {
+				if button == walk.LeftButton {
+					openDisc()
+				}
+			})
+		}
+	}
 	dropZone.DropFiles().Attach(dropImages)
 	discRow.DropFiles().Attach(dropImages)
 	idleDrop.DropFiles().Attach(dropImages)

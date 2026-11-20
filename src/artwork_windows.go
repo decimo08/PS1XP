@@ -47,7 +47,13 @@ func makeArtworkPage(owner **walk.MainWindow, job func() conversion, selected, d
 	var animationFrame image.Image
 	artworkBusy := false
 	ctx, cancel := context.WithCancel(context.Background())
-	photo, _ := readArtwork(bytes.NewReader(pspPhoto))
+	bundledPhoto, _ := readArtwork(bytes.NewReader(pspPhoto))
+	photo := bundledPhoto
+	frameDir := filepath.Dir(filepath.Dir(job().engine))
+	if custom, err := readLocalArtwork(filepath.Join(frameDir, "preview-frame.png")); err == nil &&
+		custom.Bounds().Size() == (image.Point{X: 720, Y: 504}) {
+		photo = custom
+	}
 
 	resourceDir := filepath.Join(filepath.Dir(job().engine), "Resources")
 	defaultIcon, _ := readLocalArtwork(filepath.Join(resourceDir, "ICON0.PNG"))
@@ -131,7 +137,7 @@ func makeArtworkPage(owner **walk.MainWindow, job func() conversion, selected, d
 		fillPreview()
 	}
 
-	var detect, chooseMotion, clearMotion *walk.PushButton
+	var detect, chooseMotion, clearMotion, chooseFrame *walk.PushButton
 	var motionLabel *walk.Label
 	var scan, createMotion *walk.PushButton
 	var scenePicker *walk.ComboBox
@@ -285,7 +291,37 @@ func makeArtworkPage(owner **walk.MainWindow, job func() conversion, selected, d
 		Background: panel, StretchFactor: 1, Visible: false,
 		Layout: VBox{Margins: Margins{Left: 20, Top: 16, Right: 20, Bottom: 16}, Spacing: 9},
 		Children: []Widget{
-			Label{TextColor: ink, Text: "PSP preview", Font: Font{Family: "Segoe UI", PointSize: 15, Bold: true}},
+			Composite{Background: panel, Layout: HBox{MarginsZero: true, Spacing: 8}, Children: []Widget{
+				Label{TextColor: ink, Text: "PSP preview", Font: Font{Family: "Segoe UI", PointSize: 15, Bold: true}},
+				HSpacer{},
+				PushButton{AssignTo: &chooseFrame, Text: "Choose preview frame…", MinSize: Size{Width: 165}, OnClicked: func() {
+					dialog := walk.FileDialog{Title: "Choose a 720 × 504 PSP frame", Filter: "PNG image (*.png)|*.png"}
+					ok, err := dialog.ShowOpen(*owner)
+					if err != nil {
+						status.SetText(err.Error())
+						return
+					}
+					if !ok {
+						return
+					}
+					img, err := readLocalArtwork(dialog.FilePath)
+					if err != nil {
+						status.SetText(err.Error())
+						return
+					}
+					if img.Bounds().Size() != (image.Point{X: 720, Y: 504}) {
+						status.SetText("Choose a 720 × 504 PNG with the same screen placement as the supplied frame.")
+						return
+					}
+					if err := saveDefaultArtwork(frameDir, "preview-frame.png", img); err != nil {
+						status.SetText(err.Error())
+						return
+					}
+					photo = img
+					fillPreview()
+					status.SetText("Saved the custom PSP preview frame.")
+				}},
+			}},
 			ImageView{AssignTo: &preview, Mode: ImageViewModeShrink, MinSize: Size{Height: 155}, MaxSize: Size{Height: 282}},
 			Label{AssignTo: &discSummary, TextColor: ink, Text: "No disc selected", TextAlignment: AlignCenter},
 			row("Icon · 144 × 80 px", &selected.icon, &defaults.icon, false, iconButtons),
@@ -434,7 +470,7 @@ func makeArtworkPage(owner **walk.MainWindow, job func() conversion, selected, d
 		view:        view,
 		stopPreview: stopPreview,
 		start: func() {
-			controls = append(append(iconButtons, backgroundButtons...), detect, chooseMotion, clearMotion, scan, createMotion)
+			controls = append(append(iconButtons, backgroundButtons...), detect, chooseMotion, clearMotion, scan, createMotion, chooseFrame)
 			themeButton(playMotion, panel.Color, true)
 			for _, button := range controls {
 				themeButton(button, panel.Color, false)
